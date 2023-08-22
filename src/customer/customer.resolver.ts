@@ -1,6 +1,6 @@
 import { Args, Mutation, Query, Resolver } from '@nestjs/graphql';
 import { Customer } from 'lib/entities/customer.entity';
-import { CustomerDeleteInput, CustomerUpdateInput } from './dto/customer.input';
+import { CustomerUpdateInput } from './dto/customer.input';
 import { CustomerService } from './customer.service';
 import { GetCustomerInput } from './dto/customer.input';
 import { UseGuards } from '@nestjs/common';
@@ -21,14 +21,43 @@ export class CustomerResolver {
   }
 
   @Roles(Role.ADMIN)
-  @Mutation(() => Customer)
-  async updateCustomer(@Args('data') data: CustomerUpdateInput) {
-    return this.customerService.update(data);
+  @Query(() => Customer)
+  async customerByEmail(@Args('email') email: string) {
+    return this.customerService.findByEmail(email);
+  }
+  @Roles(Role.ADMIN)
+  @Query(() => Customer)
+  async findById(@Args('id') id: string) {
+    return this.customerService.findById(id);
   }
 
   @Roles(Role.ADMIN)
   @Mutation(() => Customer)
-  async deleteCustomer(@Args('data') data: CustomerDeleteInput) {
-    return this.customerService.delete(data);
+  async updateCustomerById(
+    @Args('data') data: CustomerUpdateInput,
+    @Args('id') id: string,
+  ) {
+    return this.customerService.update(id, data);
+  }
+
+  @Roles(Role.ADMIN)
+  @Mutation(() => Customer)
+  async updateCustomerByEmail(
+    @Args('data') data: CustomerUpdateInput,
+    @Args('email') email: string,
+  ) {
+    return this.customerService.updateByEmail(email, data);
+  }
+
+  @Roles(Role.ADMIN)
+  @Mutation(() => Customer)
+  async deleteCustomerById(@Args('id') id: string) {
+    return this.customerService.delete(id);
+  }
+
+  @Roles(Role.ADMIN)
+  @Mutation(() => Customer)
+  async deleteCustomerByEmail(@Args('email') email: string) {
+    return this.customerService.deleteByEmail(email);
   }
 }

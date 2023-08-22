@@ -13,13 +13,13 @@ import { ConfigService } from '@nestjs/config';
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
   constructor(
-    private readonly _authService: AuthService,
-    private readonly _prismaService: PrismaService,
-    private readonly _configService: ConfigService,
+    private readonly authService: AuthService,
+    private readonly prismaService: PrismaService,
+    private readonly configService: ConfigService,
   ) {
     super({
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
-      secretOrKey: _configService.get('ACCESS_TOKEN_SECRET'),
+      secretOrKey: configService.get('ACCESS_TOKEN_SECRET'),
       ignoreExpiration: true,
     });
   }
@@ -28,7 +28,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
       throw new BadRequestException('Token expired');
     }
 
-    const user = await this._prismaService.customer.findUnique({
+    const user = await this.prismaService.customer.findUnique({
       where: {
         id: payload.id,
       },

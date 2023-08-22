@@ -26,6 +26,8 @@ type Token {
 
 type Query {
   customers(data: GetCustomerInput!): [Customer!]!
+  customerByEmail(email: String!): Customer!
+  findById(id: String!): Customer!
   login(data: LoginInput!): Token!
   signup(data: SignupInput!): Token!
 }
@@ -55,8 +57,10 @@ input SignupInput {
 }
 
 type Mutation {
-  updateCustomer(data: CustomerUpdateInput!): Customer!
-  deleteCustomer(data: CustomerDeleteInput!): Customer!
+  updateCustomerById(data: CustomerUpdateInput!, id: String!): Customer!
+  updateCustomerByEmail(data: CustomerUpdateInput!, email: String!): Customer!
+  deleteCustomerById(id: String!): Customer!
+  deleteCustomerByEmail(email: String!): Customer!
   refreshToken(input: RefreshTokenInput!): Token!
   logout(token: String!): Boolean!
   activate(code: String!): Boolean!
@@ -65,10 +69,6 @@ type Mutation {
 input CustomerUpdateInput {
   email: String!
   role: String!
-}
-
-input CustomerDeleteInput {
-  email: String!
 }
 
 input RefreshTokenInput {

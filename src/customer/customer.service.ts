@@ -6,7 +6,6 @@ import { GetCustomerInput } from './dto/customer.input';
 import { SignupInput } from 'src/auth/dto/signup.input';
 import { CustomerUpdateInput } from './dto/customer.input';
 import { ConfigService } from '@nestjs/config';
-import { Customer } from 'lib/entities/customer.entity';
 
 @Injectable()
 export class CustomerService {
@@ -39,15 +38,24 @@ export class CustomerService {
 
     return user;
   }
-  update(data: CustomerUpdateInput) {
-    const { email, role } = data;
+  update(id: string, data: CustomerUpdateInput) {
     return this.prisma.customer.update({
-      where: { email },
-      data: { role },
+      where: { id },
+      data: { ...data },
     });
   }
-  delete(data: { email: string }) {
-    const { email } = data;
+  updateByEmail(email: string, data: CustomerUpdateInput) {
+    return this.prisma.customer.update({
+      where: { email },
+      data: { ...data },
+    });
+  }
+  delete(id: string) {
+    return this.prisma.customer.delete({
+      where: { id },
+    });
+  }
+  deleteByEmail(email: string) {
     return this.prisma.customer.delete({
       where: { email },
     });
@@ -111,12 +119,34 @@ export class CustomerService {
   }
 
   private async hashPassword(password: string): Promise<string> {
-    const salt = await bcrypt.genSalt(10);
+    const salt = await bcrypt.genSalt(
+      Number.parseInt(this.configService.get('PASSWORD_HASH_SALT')),
+    );
     return await bcrypt.hash(password, salt);
   }
 
   private async hashActivationCode(code: string): Promise<string> {
     const salt = Number.parseInt(this.configService.get('ACTIVATE_EMAIL_SALT'));
     return await bcrypt.hash(code, salt);
+  }
+
+  async findByEmail(email: string) {
+    const user = await this.prisma.customer.findUnique({
+      where: { email },
+    });
+
+    if (!user) throw new Error('User not found');
+
+    return user;
+  }
+
+  async findById(id: string) {
+    const user = await this.prisma.customer.findUnique({
+      where: { id },
+    });
+
+    if (!user) throw new Error('User not found');
+
+    return user;
   }
 }
